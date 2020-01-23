@@ -48,7 +48,7 @@ namespace CheckInSystem.Data
             get
             {
                 //sqlConnectionString = configuration.GetConnectionString("LocalDatabase");
-                sqlConnectionString = $"Server=(localdb)\\MSSQLLocalDB;Integrated Security=true;";
+                sqlConnectionString = $"Server=(localdb)\\MSSQLLocalDB;Integrated Security=true;Database=CheckInSystem;";
                 return sqlConnectionString;
             }
             set

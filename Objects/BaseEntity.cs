@@ -12,13 +12,7 @@ namespace CheckInSystem.Objects
         #endregion
 
         #region Properties        
-        /// <summary>
-        /// Gets UserName
-        /// </summary>
-        /// <value>
-        /// The value of the specified ID for the base.
-        /// </value>
-        public string UserName { get { return userName; } }
+        public string UserName { get { return userName; } set { userName = value; } }
         #endregion
     }
 }

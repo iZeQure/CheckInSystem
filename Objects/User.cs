@@ -15,7 +15,7 @@ namespace CheckInSystem.Objects
         private string rfidCard;
         private bool isDisabled;
 
-        private List<CheckTime> checkTime;
+        private List<DateTime> checkTime;
         private Role role;
         #endregion
 
@@ -70,7 +70,7 @@ namespace CheckInSystem.Objects
         /// <value>
         /// The check time.
         /// </value>
-        public List<CheckTime> CheckTime { get { return checkTime; } set { checkTime = value; } }
+        public List<DateTime> CheckTime { get { return checkTime; } set { checkTime = value; } }
         /// <summary>
         /// Gets or sets the role.
         /// </summary>

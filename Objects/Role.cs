@@ -10,7 +10,6 @@ namespace CheckInSystem.Objects
         #region Attributes
         private string name;
         private string description;
-        private string userName;
         #endregion
 
         #region Properties        
@@ -28,13 +27,6 @@ namespace CheckInSystem.Objects
         /// The description.
         /// </value>
         public string Description { get { return description; } set { description = value; } }
-        /// <summary>
-        /// Gets or sets the name of the user.
-        /// </summary>
-        /// <value>
-        /// The name of the user.
-        /// </value>
-        public string UserName { get { return userName; } set { userName = value; } }
         #endregion
     }
 }
