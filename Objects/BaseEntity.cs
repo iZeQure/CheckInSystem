@@ -8,11 +8,11 @@ namespace CheckInSystem.Objects
     public class BaseEntity
     {
         #region Attributes        
-        private string userName;
+        private string id;
         #endregion
 
         #region Properties        
-        public string UserName { get { return userName; } set { userName = value; } }
+        public string Id { get { return id; } set { id = value; } }
         #endregion
     }
 }

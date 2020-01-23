@@ -1,4 +1,5 @@
 ﻿using CheckInSystem.Objects;
+using CheckInSystem.Objects.Helpers;
 using CheckInSystem.Repository;
 using Microsoft.Data.SqlClient;
 using System;
@@ -11,7 +12,7 @@ namespace CheckInSystem.Data
 {
     public class UserRepository : IUserRepository
     {
-        public void Add(User add)
+        public bool Add(User add)
         {
             using SqlConnection conn = Database.Instance.SqlConnection;
             {
@@ -24,39 +25,26 @@ namespace CheckInSystem.Data
                         CommandType = CommandType.StoredProcedure
                     };
 
-                    command.Parameters.AddWithValue($"UserName", add.UserName).Direction = ParameterDirection.Input;
+                    command.Parameters.AddWithValue($"UserName", add.Id).Direction = ParameterDirection.Input;
                     command.Parameters.AddWithValue($"FirstName", add.FirstName).Direction = ParameterDirection.Input;
                     command.Parameters.AddWithValue($"LastName", add.LastName).Direction = ParameterDirection.Input;
                     command.Parameters.AddWithValue($"PhoneNumber", add.PhoneNumber).Direction = ParameterDirection.Input;
                     command.Parameters.AddWithValue($"Password", add.Password).Direction = ParameterDirection.Input;
                     command.Parameters.AddWithValue($"RFIDCard", add.RFIDCard).Direction = ParameterDirection.Input;
-                    command.Parameters.AddWithValue($"UserRole", add.Role).Direction = ParameterDirection.Input;
+                    command.Parameters.AddWithValue($"UserRole", add.Role.Name).Direction = ParameterDirection.Input;
+                    command.Parameters.Add($"@CheckUserCreated", SqlDbType.Bit).Direction = ParameterDirection.ReturnValue;
 
                     command.ExecuteNonQuery();
+
+                    return (bool)Convert.ToBoolean(command.Parameters[$"@CheckUserCreated"].Value);
                 }
-                catch (Exception)
+                catch (SqlException)
                 {
-                    throw;
+                    return false;
                 }
-            }
-        }
-
-        public void Disable(User disable)
-        {
-            using SqlConnection conn = Database.Instance.SqlConnection;
-            {
-                try
+                catch (DuplicateNameException)
                 {
-                    conn.Open();
-
-                    using SqlCommand command = new SqlCommand($"PUT_DisableUserByUserName", conn)
-                    {
-                        CommandType = CommandType.StoredProcedure
-                    };
-
-                    command.Parameters.AddWithValue($"@UserName", disable.IsDisabled).Direction = ParameterDirection.Input;
-
-                    command.ExecuteNonQuery();
+                    return false;
                 }
                 catch (Exception)
                 {
@@ -88,16 +76,17 @@ namespace CheckInSystem.Data
                         {
                             listOfUsers.Add(new User()
                             {
-                                UserName = reader.GetString(0),
-                                FirstName = reader.GetString(1),
-                                LastName = reader.GetString(2),
-                                PhoneNumber = reader.GetString(3),
-                                RFIDCard = reader.GetString(4),
+                                Id = reader.GetString("UserName"),
+                                FirstName = reader.GetString("FirstName"),
+                                LastName = reader.GetString("LastName"),
+                                PhoneNumber = reader.GetString("PhoneNumber"),
+                                RFIDCard = reader.GetString("RFIDCard"),
                                 Role = new Role()
                                 {
-                                    Name = reader.GetString(5)
+                                    Name = reader.GetString("Role_Name"),
+                                    Description = reader.GetString("Description")
                                 },
-                                IsDisabled = reader.GetBoolean(6),
+                                IsDisabled = reader.GetBoolean("IsDisabled"),
                                 CheckTime = new List<DateTime>()
 
                             });
@@ -113,7 +102,7 @@ namespace CheckInSystem.Data
                             CommandType = CommandType.StoredProcedure
                         };
 
-                        getCheckTimes.Parameters.AddWithValue("@Username", user.UserName);
+                        getCheckTimes.Parameters.AddWithValue("@Username", user.Id);
 
                         using SqlDataReader sqlDataReader = getCheckTimes.ExecuteReader();
 
@@ -123,7 +112,7 @@ namespace CheckInSystem.Data
                             {
                                 while (sqlDataReader.Read())
                                 {
-                                    user.CheckTime.Add(sqlDataReader.GetDateTime(0));
+                                    user.CheckTime.Add(sqlDataReader.GetDateTime("CardReadTime"));
                                 }
                             }
                         }
@@ -140,6 +129,7 @@ namespace CheckInSystem.Data
 
         public User GetById(string userName)
         {
+
             using SqlConnection conn = Database.Instance.SqlConnection;
             {
                 User userDetails = new User();
@@ -163,7 +153,7 @@ namespace CheckInSystem.Data
                         {
                             userDetails = new User()
                             {
-                                UserName = userDetailsReader.GetString(0),
+                                Id = userDetailsReader.GetString(0),
                                 FirstName = userDetailsReader.GetString(1),
                                 LastName = userDetailsReader.GetString(2),
                                 PhoneNumber = userDetailsReader.GetString(3),
@@ -223,7 +213,7 @@ namespace CheckInSystem.Data
                         CommandType = CommandType.StoredProcedure
                     };
 
-                    command.Parameters.AddWithValue($"@UserName", update.UserName).Direction = ParameterDirection.Input;
+                    command.Parameters.AddWithValue($"@UserName", update.Id).Direction = ParameterDirection.Input;
                     command.Parameters.AddWithValue($"@FirstName", update.FirstName).Direction = ParameterDirection.Input;
                     command.Parameters.AddWithValue($"@LastName", update.LastName).Direction = ParameterDirection.Input;
                     command.Parameters.AddWithValue($"@PhoneNumber", update.PhoneNumber).Direction = ParameterDirection.Input;
@@ -239,6 +229,94 @@ namespace CheckInSystem.Data
                     throw;
                 }
             }
+        }
+
+        public void DisableUser(string id)
+        {
+            using SqlConnection conn = Database.Instance.SqlConnection;
+            {
+                try
+                {
+                    conn.Open();
+
+                    using SqlCommand command = new SqlCommand($"PUT_DisableUserByUserName", conn)
+                    {
+                        CommandType = CommandType.StoredProcedure
+                    };
+
+                    command.Parameters.AddWithValue($"@UserName", id).Direction = ParameterDirection.Input;
+
+                    command.ExecuteNonQuery();
+                }
+                catch (Exception)
+                {
+                    throw;
+                }
+            }
+        }
+
+        public void ActivateUser(string id)
+        {
+            using SqlConnection conn = Database.Instance.SqlConnection;
+            {
+                try
+                {
+                    conn.Open();
+
+                    using SqlCommand activateUserCommand = new SqlCommand($"PUT_ActivateUserByUserName", conn) { CommandType = CommandType.StoredProcedure };
+                    {
+                        activateUserCommand.Parameters.AddWithValue($"@UserName", id).Direction = ParameterDirection.Input;
+
+                        activateUserCommand.ExecuteNonQuery();
+                    }
+                }
+                catch (Exception)
+                {
+
+                    throw;
+                }
+            }
+        }
+
+        public bool ChangeUserPassword(UserHelper user)
+        {
+            using SqlConnection conn = Database.Instance.SqlConnection;
+            {
+                try
+                {
+                    conn.Open();
+
+                    using SqlCommand changeUserPasswordCommand = new SqlCommand($"PUT_ChangeUserPasswordByUserName", conn) { CommandType = CommandType.StoredProcedure };
+                    {
+                        changeUserPasswordCommand.Parameters.AddWithValue($"@UserName", user.Id).Direction = ParameterDirection.Input;
+                        changeUserPasswordCommand.Parameters.AddWithValue($"@Password", user.Password).Direction = ParameterDirection.Input;
+                        changeUserPasswordCommand.Parameters.AddWithValue($"@NewPassword", user.NewPassword).Direction = ParameterDirection.Input;
+                        changeUserPasswordCommand.Parameters.Add($"@PasswordValidation", SqlDbType.Bit).Direction = ParameterDirection.ReturnValue;
+
+                        changeUserPasswordCommand.ExecuteNonQuery();
+
+                        return Convert.ToBoolean(changeUserPasswordCommand.Parameters["@PasswordValidation"].Value);
+                    }
+                }
+                catch (SqlException)
+                {
+                    return false;
+                }
+                catch (Exception)
+                {
+                    throw;
+                }
+            }
+        }
+
+        public bool ChangeUserRFID(User user)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool ChangeUserRole(User user)
+        {
+            throw new NotImplementedException();
         }
     }
 }
