@@ -35,7 +35,7 @@ namespace CheckInSystem.Data
             }
         }
 
-        public void Delete(Role role)
+        public void Delete(string roleId)
         {
             using SqlConnection conn = Database.Instance.SqlConnection;
             {
@@ -48,7 +48,7 @@ namespace CheckInSystem.Data
                         CommandType = CommandType.StoredProcedure
                     };
 
-                    deleteRoleCommand.Parameters.AddWithValue($"@RoleName", role.Name).Direction = ParameterDirection.Input;
+                    deleteRoleCommand.Parameters.AddWithValue($"@RoleName", roleId).Direction = ParameterDirection.Input;
 
                     deleteRoleCommand.ExecuteNonQuery();
                 }

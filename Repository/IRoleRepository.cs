@@ -7,7 +7,7 @@ namespace CheckInSystem.Repository
     interface IRoleRepository
     {
         void Add(Role role);
-        void Delete(Role role);
+        void Delete(string roleId);
         List<Role> GetRoles();
         Role GetRoleBydId(string roleName);
         void Update(RoleHelper role);

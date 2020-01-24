@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using CheckInSystem.Data;
 using CheckInSystem.Objects;
 using CheckInSystem.Objects.Helpers;
 using CheckInSystem.Repository;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CheckInSystem.Controllers
@@ -14,6 +10,8 @@ namespace CheckInSystem.Controllers
     [Route("[controller]/[action]")]
     public class RoleController : ControllerBase
     {
+        #region POST Methods
+        //POST: role/create
         [HttpPost]
         [ActionName("create")]
         public ActionResult<Role> CreateRole(Role role)
@@ -23,12 +21,14 @@ namespace CheckInSystem.Controllers
                 if (role != null)
                 {
                     roleRepository.Add(role);
-                    return Ok($"Created Role : {role.Name}");
+                    return Ok(role.Name);
                 }
                 else return NoContent();
             }
         }
+        #endregion
 
+        #region GET Methods
         [HttpGet]
         [ActionName("all")]
         public ActionResult<List<Role>> GetAllRoles()
@@ -50,7 +50,9 @@ namespace CheckInSystem.Controllers
                 else return NotFound();
             }
         }
+        #endregion
 
+        #region PUT Methods
         [HttpPut]
         [ActionName("update")]
         public ActionResult<RoleHelper> UpdateRole(RoleHelper role)
@@ -75,7 +77,7 @@ namespace CheckInSystem.Controllers
                 if (role != null)
                 {
                     roleRepository.UpdateRoleDescription(role);
-                    return Ok($"Updated Role Description for {role.Name} to {role.Description}");
+                    return Ok(role.Description);
                 }
                 else return NoContent();
             }
@@ -95,20 +97,23 @@ namespace CheckInSystem.Controllers
                 else return NoContent();
             }
         }
+        #endregion
 
+        #region DELETE Methods
         [HttpDelete]
         [ActionName("delete")]
-        public ActionResult<Role> DeleteRole(Role role)
+        public ActionResult<Role> DeleteRole(string roleId)
         {
             IRoleRepository roleRepository = new RoleRepository();
             {
-                if (role.Name != null)
+                if (roleId != null)
                 {
-                    roleRepository.Delete(role);
-                    return Ok($"Deleted Role : {role.Name}");
+                    roleRepository.Delete(roleId);
+                    return Ok(roleId);
                 }
                 else return NoContent();
             }
-        }
+        } 
+        #endregion
     }
 }

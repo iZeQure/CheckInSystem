@@ -311,12 +311,62 @@ namespace CheckInSystem.Data
 
         public bool ChangeUserRFID(User user)
         {
-            throw new NotImplementedException();
+            using SqlConnection conn = Database.Instance.SqlConnection;
+            {
+                try
+                {
+                    conn.Open();
+
+                    using SqlCommand changeUserRfidCommand = new SqlCommand($"PUT_ChangeUserRFIDCardByUserName", conn) { CommandType = CommandType.StoredProcedure };
+                    {
+                        changeUserRfidCommand.Parameters.AddWithValue($"@UserName", user.Id).Direction = ParameterDirection.Input;
+                        changeUserRfidCommand.Parameters.AddWithValue($"@RFIDCard", user.RFIDCard).Direction = ParameterDirection.Input;
+                        changeUserRfidCommand.Parameters.Add($"@RFIDChangeValidation", SqlDbType.Bit).Direction = ParameterDirection.ReturnValue;
+
+                        changeUserRfidCommand.ExecuteNonQuery();
+
+                        return (bool)Convert.ToBoolean(changeUserRfidCommand.Parameters["@RFIDChangeValidation"].Value);
+                    }
+                }
+                catch (SqlException)
+                {
+                    return false;
+                }
+                catch (Exception)
+                {
+                    throw;
+                }
+            }
         }
 
         public bool ChangeUserRole(User user)
         {
-            throw new NotImplementedException();
+            using SqlConnection conn = Database.Instance.SqlConnection;
+            {
+                try
+                {
+                    conn.Open();
+
+                    using SqlCommand changeUserRoleCommand = new SqlCommand($"PUT_ChangeUserRoleByUserName", conn) { CommandType = CommandType.StoredProcedure };
+                    {
+                        changeUserRoleCommand.Parameters.AddWithValue($"@UserName", user.Id).Direction = ParameterDirection.Input;
+                        changeUserRoleCommand.Parameters.AddWithValue($"@UserRole", user.Role.Name).Direction = ParameterDirection.Input;
+                        changeUserRoleCommand.Parameters.Add($"@UserRoleChangeValidation", sqlDbType: SqlDbType.Bit).Direction = ParameterDirection.ReturnValue;
+
+                        changeUserRoleCommand.ExecuteNonQuery();
+
+                        return (bool)Convert.ToBoolean(changeUserRoleCommand.Parameters["@UserRoleChangeValidation"].Value);
+                    }
+                }
+                catch (SqlException)
+                {
+                    return false;
+                }
+                catch (Exception)
+                {
+                    throw;
+                }
+            }
         }
     }
 }
